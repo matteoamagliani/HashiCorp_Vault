@@ -1,0 +1,4 @@
+.vault-token
+data/
+__pycache__/
+.env

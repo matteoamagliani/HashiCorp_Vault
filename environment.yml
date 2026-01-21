@@ -1,0 +1,11 @@
+name: vault-demo
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - requests
+  - jq
+  - openssl
+  - pip:
+      - hvac
