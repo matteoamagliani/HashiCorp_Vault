@@ -1,4 +1,9 @@
-.vault-token
-data/
-__pycache__/
+docker/vault/file/
+docker/vault/logs/
+server-init.json
+*.log
 .env
+__pycache__/
+
+
+
