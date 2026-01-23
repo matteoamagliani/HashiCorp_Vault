@@ -1,145 +1,232 @@
-# HashiCorp Vault
 
-This repository contains notes, examples, and configurations for HashiCorp Vault.
+# HashiCorp Vault – Basic Demonstration
 
+This repository contains notes, examples, and configurations for a **basic demonstration of HashiCorp Vault**, covering CLI usage, authentication methods, policies, secrets engines, and the Vault UI.
 
-## Steps performed:
+---
 
-1. Install Vault from this link (Windows):
-https://developer.hashicorp.com/vault/install#windows
-2. Download the .zip file and unzip it. Is a simple binary file.
-3. make sure the vault bianry is available on the PATH: 
-https://developer.hashicorp.com/vault/docs/get-vault/install-binary
+## Prerequisites
 
-Now 2 options:
-    - USE HashiCorp Cloud Platform (HCP) Vault Dedicated: 
-    https://developer.hashicorp.com/vault/tutorials/get-started-hcp-vault-dedicated/why-use-hcp-vault
-    - "PROCED LOCALLY".
+* Windows OS
+* Vault CLI installed and available in `PATH`
+
+---
+
+## Installation
+
+1. Download Vault for Windows from:
+   [https://developer.hashicorp.com/vault/install#windows](https://developer.hashicorp.com/vault/install#windows)
+
+2. Unzip the archive (Vault is distributed as a single binary).
+
+3. Ensure the `vault` binary is available in your system `PATH`:
+   [https://developer.hashicorp.com/vault/docs/get-vault/install-binary](https://developer.hashicorp.com/vault/docs/get-vault/install-binary)
+
+---
+
+## Deployment Options
+
+You can run Vault in two different ways:
+
+* **HashiCorp Cloud Platform (HCP) – Vault Dedicated**
+  [https://developer.hashicorp.com/vault/tutorials/get-started-hcp-vault-dedicated/why-use-hcp-vault](https://developer.hashicorp.com/vault/tutorials/get-started-hcp-vault-dedicated/why-use-hcp-vault)
+
+* **Local Vault (Dev Mode)** *(used in this repository)*
+
+---
 
 ## 1. HCP Vault Dedicated
-https://developer.hashicorp.com/vault/tutorials/get-started-hcp-vault-dedicated
 
-## 2. Local procedure
-vault foundations:
-https://developer.hashicorp.com/vault/tutorials/get-started
+Official tutorial:
+[https://developer.hashicorp.com/vault/tutorials/get-started-hcp-vault-dedicated](https://developer.hashicorp.com/vault/tutorials/get-started-hcp-vault-dedicated)
 
-- After instalaltion (set up **dev server**):
-https://developer.hashicorp.com/vault/tutorials/get-started/setup
+---
+
+## 2. Local Vault (Dev Mode)
+
+Vault Foundations tutorial:
+[https://developer.hashicorp.com/vault/tutorials/get-started](https://developer.hashicorp.com/vault/tutorials/get-started)
+
 ### Scenario
-Danielle is on the HashiCups development team, and builds the applications and plugins which interact with Vault. They have installed the Vault binary on their computer, and can now use a Vault development (dev mode) server for development and testing.
 
-Oliver from the operations team evaluates a self-managed Vault server, and the HashiCorp Cloud Platform (HCP) Vault Dedicated server as solutions for local user acceptance testing.
+* **Danielle** is a developer working on applications and plugins that interact with Vault. She uses a local Vault dev server for development and testing.
+* **Oliver** is part of the operations team and evaluates both a self-managed Vault server and HCP Vault Dedicated for user acceptance testing.
 
-Danielle and Oliver will start and prepare their Vault servers for use, check the server status, and use their initial root token to authenticate with Vault.
+Vault follows a **client–server architecture**:
 
-Vault operates as a client-server application. The Vault server is the sole piece of the Vault architecture that interacts with the data storage and backends. All operations done using the Vault CLI interact with the server over a TLS connection.
+* The Vault server manages secrets and storage backends.
+* The Vault CLI communicates with the server over a TLS connection.
 
-eSEGUIRE GLI STEPS (versione windows):
- 1. Dopo: vault server -dev -dev-root-token-id root -dev-tls
- 
- Another terminal:
- 2.  $env:VAULT_ADDR="https://127.0.0.1:8200"
- 3. $env:VAULT_CACERT="C:\Users\matteo\AppData\Local\Temp\vault-tls537602629/vault-ca.pem"
-4. vault status 
-5. vault login
-6. Insert psw: root
+---
 
-Setup LAB: LEARN TO USE CLI
+## Start Vault (Windows)
 
-Equivalente di:
-- vault status --help | head -n 12 
-in windows:
-- vault status --help | Select-Object -First 20
+Run Vault in dev mode:
 
-poi:
-- vault status -format=json
+```powershell
+vault server -dev -dev-root-token-id root -dev-tls
+```
 
-### Understand the Vault CLI
-The general command syntax is:
+In a **second terminal**, configure the environment:
 
+```powershell
+$env:VAULT_ADDR="https://127.0.0.1:8200"
+$env:VAULT_CACERT="C:\Users\matteo\AppData\Local\Temp\vault-tlsXXXXX\vault-ca.pem"
+```
+
+Verify the server:
+
+```powershell
+vault status
+vault login
+```
+
+Use `root` as the token.
+
+---
+
+## Learn the Vault CLI
+
+Command syntax:
+
+```text
 vault <command> [options] [path] [args]
+```
 
-- vault token --help
+Examples:
 
-### Enable and configure an auth method
-- vault auth --help
-- vault auth enable userpass
-NOW I HAVE ALSO ENBLED THE AUTH method using userpass. 
-- vault auth list
-I now have the token and the userpass methods.
+```powershell
+vault status --help | Select-Object -First 20
+vault status -format=json
+vault token --help
+```
 
-By default, Vault enables all auth methods under the path /auth/. In this case, you enabled an instance of the userpass auth method at the path userpass/, so the fully qualified path to this auth method becomes /auth/userpass.
+---
 
-- vault path-help /auth/userpass
+## Enable and Configure Authentication
+
+Enable the `userpass` auth method:
+
+```powershell
+vault auth enable userpass
+vault auth list
+vault path-help /auth/userpass
+```
+
+Vault enables auth methods under `/auth/`.
+The `userpass` method is available at `/auth/userpass`.
+
+---
+
+## Move or Create the dicrectory where we want to save an ACL Policy
+
+In my case: #TODO 
 
 
-POI:
-Mi spsoto in una mia directory:
-- PS C:\WINDOWS\system32> cd $env:USERPROFILE\Documents
-- notepad developer-vault-policy.hcl
-salva il file con:
+Move to a working directory:
+
+```powershell
+cd $env:USERPROFILE\Documents
+notepad developer-vault-policy.hcl
+```
+
+Policy definition:
+
+```hcl
 path "dev-secrets/+/creds" {
   capabilities = ["create", "list", "read", "update"]
 }
-- vault policy write developer-vault-policy developer-vault-policy.hcl
+```
 
-Creo nuova cartella e ripeto gli steps sopra:
- - mkdir $env:USERPROFILE\vault-lab
- - cd $env:USERPROFILE\vault-lab
+Apply the policy:
 
-POI:
-- vault write auth/userpass/users/danielle-vault-user password="Flyaway Cavalier Primary Depose" policies=developer-vault-policy
+```powershell
+vault policy write developer-vault-policy developer-vault-policy.hcl
+```
 
-- vault secret --help 
-- vault secret list
+---
 
-A Vault server starts with some secrets engines enabled by default, including the cubbyhole, identity, and sys secrets engines. Since this is a dev server, Vault also enables a default instance of the key/value secrets engine, version 1
+## Create a User
 
-Enable a new instance of the version 2 key/value secrets engine, which features secret versioning at the path /dev-secret
-- vault secrets enable -path=dev-secrets -version=2 kv
+```powershell
+vault write auth/userpass/users/danielle-vault-user `
+  password="Flyaway Cavalier Primary Depose" `
+  policies=developer-vault-policy
+```
 
-### Authenticate and create secret
-Authenticate with Vault using the userpass auth method as danielle-vault-user:
-- vault login -method=userpass username=danielle-vault-user
-- password: Flyaway Cavalier Primary Depose
+---
 
-you can put a new secret in the secrets engine at the path /dev-secrets with the kv command.
-- vault kv --help
-- vault kv put /dev-secrets/creds api-key=E6BED968-0FE3-411E-9B9B-C45812E4737A
-- vault kv get /dev-secrets/creds
+## Enable Secrets Engine
 
-## Learn to use the Vault UI
-All editions of Vault include a web user interface (UI). In this tutorial you will assume the role of Oliver from the operations team who is going to configure Vault using the UI for Steve and the SRE team.
+List existing engines:
 
-Open a web browser and navigate to https://127.0.0.1:8200. Accept the warning about self-signed certificates.
+```powershell
+vault secrets list
+```
 
-validate server status:
-https://127.0.0.1:8200/v1/sys/seal-status
+Enable a **KV v2** secrets engine:
 
-Navigate to the Vault login page at https://127.0.0.1:8200/ui.
+```powershell
+vault secrets enable -path=dev-secrets -version=2 kv
+```
 
-All editions of Vault include the Vault UI. The Vault UI supports authenticating to Vault using supported auth methods such as userpass or oidc through an OIDC provider.
+---
 
-Because you are running Vault in dev mode, the UI is automatically enabled. This helps quickly start Vault for testing or development.
+## Authenticate and Manage Secrets
 
-You can enable the UI using a Vault configuration file for more complex requirements. Add the ui parameter to the configuration file and set the value to true.
+Login using `userpass`:
 
-## Explore the VAULT UI
-1. On the Vault login page (https://127.0.0.1:8200/ui) enter root in the Token field and click Sign In.
-2. Oliver will use the Vault UI to enable and configure the userpass auth method for the SRE team, and create a Vault ACL policy to allow access to the k/v secrets engine.
-3. Navigate to the main Vault dashboard at https://127.0.0.1:8200/ui/vault/dashboard and click Policies.
+```powershell
+vault login -method=userpass username=danielle-vault-user
+```
 
-All the steps performed..
+Store a secret:
 
-## Learn to use the Vault HTTP API
-Same steps but using API calls (#TODO)
+```powershell
+vault kv put dev-secrets/creds api-key=E6BED968-0FE3-411E-9B9B-C45812E4737A
+```
 
+Retrieve the secret:
 
-## Structure
-- `configs/` – Vault configurations
-- `scripts/` – Helper scripts
-- `docs/` – documentations
+```powershell
+vault kv get dev-secrets/creds
+```
 
+---
 
-## Usage
-Work in progress...
+## Vault UI
+
+Vault includes a built-in web UI.
+
+Open your browser and navigate to:
+
+* UI: [https://127.0.0.1:8200/ui](https://127.0.0.1:8200/ui)
+* Seal status: [https://127.0.0.1:8200/v1/sys/seal-status](https://127.0.0.1:8200/v1/sys/seal-status)
+
+Accept the self-signed certificate warning.
+
+### Explore the UI
+
+1. Log in using the `root` token.
+2. Enable and configure auth methods.
+3. Create and manage ACL policies.
+4. Inspect secrets engines and stored secrets.
+
+---
+
+## Vault HTTP API
+
+The same operations can be performed using the Vault HTTP API.
+*(Work in progress – TODO)*
+
+---
+
+## Repository Structure
+
+```
+configs/   # Vault configuration files
+scripts/   # Helper scripts
+docs/      # Documentation and notes
+```
+
+---
