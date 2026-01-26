@@ -238,6 +238,8 @@ In a **second terminal**, configure the environment:
 $env:VAULT_ADDR="https://127.0.0.1:8200"
 $env:VAULT_CACERT="C:\Users\matteo\AppData\Local\Temp\vault-tlsXXXXX\vault-ca.pem"
 ```
+Last:
+$env:VAULT_CACERT="C:\Users\matteo\AppData\Local\Temp\vault-tls3337005252\vault-ca.pem"
 
 Verify the server:
 

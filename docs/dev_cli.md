@@ -297,15 +297,15 @@ vault secrets list
 Create user:
 
 ```powershell
-vault write auth/userpass/users/danielle-vault-user `
-  password="Flyaway Cavalier Primary Depose" `
+vault write auth/userpass/users/matteo-vault-user `
+  password="Matteo_uclm25" `
   policies="developer-vault-policy"
 ```
 
 Login as user and test:
 
 ```powershell
-vault login -method=userpass username=danielle-vault-user
+vault login -method=userpass username=matteo-vault-user
 vault kv put dev-secrets/creds api-key="E6BED968-0FE3-411E-9B9B-C45812E4737A"
 vault kv get dev-secrets/creds
 ```
@@ -314,6 +314,11 @@ Expected:
 
 * put/get works as restricted user (because policy allows exactly that path)
 
+If I try another path:
+
+```powershell
+vault kv put dev-secrets/creds_not_allowed api-key="E6BED968-0FE3-411E-9B9B-C45812E4737A"
+```
 ---
 
 ## B7) Vault UI (TLS)
@@ -324,27 +329,6 @@ Open:
 
 If the UI “doesn’t work”, do this quick triage:
 
-1. Is Vault reachable?
-
-```powershell
-Invoke-RestMethod -Uri "$env:VAULT_ADDR/v1/sys/health" -Method GET
-```
-
-2. Does `vault status` show UI enabled?
-
-```powershell
-vault status
-```
-
-Look for a `UI:` line. If you don’t see it / unsure, check server flags support:
-
-```powershell
-vault server -help | Select-String -Pattern "ui" -CaseSensitive:$false
-```
-
-3. Browser issues:
-
-* Make sure you used **https** (not http).
 * If the browser blocks the cert, proceed/accept (self-signed).
 
 ---
