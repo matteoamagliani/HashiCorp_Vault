@@ -4,6 +4,8 @@ services:
     container_name: vault-dev
     ports:
       - "8200:8200"
+    volumes:
+      - ./vault/logs:/vault/logs
     environment:
       VAULT_LOG_LEVEL: info
     cap_add:

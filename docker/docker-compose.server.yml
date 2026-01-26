@@ -1,0 +1,18 @@
+services:
+  vault:
+    image: hashicorp/vault:1.16.1
+    container_name: vault-server
+    ports:
+      - "8200:8200"
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - ./vault/config:/vault/config
+      - ./vault/file:/vault/file
+      - ./vault/logs:/vault/logs
+    command: vault server -config=/vault/config/vault.hcl
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8200/v1/sys/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
