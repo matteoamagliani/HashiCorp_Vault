@@ -13,10 +13,10 @@ vault <command> [options] [path] [args]
 Useful discovery commands:
 
 ```powershell
-PS> vault status --help | Select-Object -First 30
-PS> vault token --help
-PS> vault secrets --help
-PS> vault auth --help
+vault status --help | Select-Object -First 30
+vault token --help
+vault secrets --help
+vault auth --help
 ```
 
 ---
@@ -26,13 +26,13 @@ PS> vault auth --help
 ### Verify Vault CLI
 
 ```powershell
-PS> vault version
+vault version
 ```
 
 ### Set the Vault address (HTTP for local lab)
 
 ```powershell
-PS> $env:VAULT_ADDR = "http://127.0.0.1:8200"
+$env:VAULT_ADDR = "http://127.0.0.1:8200"
 ```
 
 ### TLS setup (when you start Vault with -dev-tls)
@@ -45,10 +45,10 @@ To make the Vault CLI trust it, set `VAULT_CACERT`.
 
 In my case the dicrectory will be: 
 ```powershell
-PS> $env:VAULT_CACERT="C:\Users\matteo\AppData\Local\Temp\vault-tlsXXXXX\vault-ca.pem"
+$env:VAULT_CACERT="C:\Users\matteo\AppData\Local\Temp\vault-tlsXXXXX\vault-ca.pem"
 ```
 
-**Current**:
+**LAST ONE**:
 $env:VAULT_CACERT="C:\Users\matteo\AppData\Local\Temp\vault-tls986829724\vault-ca.pem"
 
 ---
@@ -127,15 +127,15 @@ vault login -method=userpass username=payments-app
 ```
 
 **Test**:
-Now login as a root and create another secret:
+Now login as a root and create another secret, then swith to the other user:
+
 ```powershell
 vault login 
-
 PSW: dev-only-token
 ```
 
 ```powershell
-vault kv put app-secrets/payments/other-service token=secret_token
+vault kv put app-secrets/payments/other-service token="secret_token"
 ```
 
 ```powershell
@@ -255,14 +255,9 @@ vault path-help auth/userpass
 
 ---
 
-## B5) Policy file (FIXED — your original has 2 issues)
+## B5) Policy file
 
-### Why fix?
-
-* Vault policies use `*` wildcards, **not `+`**
-* KV v2 needs `/data/` and `/metadata/` paths in policies
-
-Create `developer-vault-policy.hcl` like this:
+Example of `developer-vault-policy.hcl` :
 
 ```hcl
 # Allow read/write the single secret "dev-secrets/creds"
@@ -326,9 +321,6 @@ vault kv put dev-secrets/creds_not_allowed api-key="E6BED968-0FE3-411E-9B9B-C458
 Open:
 
 * `https://127.0.0.1:8200/ui`
-
-If the UI “doesn’t work”, do this quick triage:
-
 * If the browser blocks the cert, proceed/accept (self-signed).
 
 ---

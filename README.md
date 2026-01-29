@@ -78,7 +78,7 @@ conda activate vault-lab
 docker compose -f docker\docker-compose.dev.yml up -d
 ```
 
-Then follow `docs\cli.md` → **DEV MODE** section.
+Then follow `docs\dev_cli.md`.
 
 #### Option B — Server mode (realistic)
 
@@ -86,7 +86,7 @@ Then follow `docs\cli.md` → **DEV MODE** section.
 docker compose -f docker\docker-compose.server.yml up -d
 ```
 
-Then follow `docs\cli.md` → **SERVER MODE** section (init/unseal + login).
+Then follow `docs\server_cli.md`.
 
 #### Optional — Server + PostgreSQL (dynamic DB creds demo)
 
@@ -94,7 +94,7 @@ Then follow `docs\cli.md` → **SERVER MODE** section (init/unseal + login).
 docker compose -f docker\docker-compose.server-db.yml up -d
 ```
 
-Then follow `docs\cli.md` → **Dynamic DB credentials** section.
+Then follow `docs\server_cli.md` → **Dynamic DB credentials** section.
 
 ---
 
@@ -125,7 +125,7 @@ Vault includes a built-in web UI:
 * Server mode data persists under `docker\vault\file\` (bind-mounted volume).
 * Audit log is written to `docker\vault\logs\vault-audit.log`.
 
-For full step-by-step commands, see: **docs/cli.md**
+For full step-by-step commands, see: **docs/dev_cli.md** (dev mode) and **docs/server_cli.md** (server mode).
 
 
 ## Project layout
@@ -137,17 +137,18 @@ vault-demo-realistic-refactored/
   docker/
     docker-compose.dev.yml
     docker-compose.server.yml
-    docker-compose.server-db.yml        # optional: adds postgres for dynamic creds tests
+    docker-compose.server-db.yml      
     vault/
       config/vault.hcl
       policies/
         app-cred-policy.hcl
         kv-access-policy.hcl
-        db-readonly-policy.hcl
+        db-readonly-policy.hcl...
       sql/
-        postgres-init.sql               # optional sample DB objects
+        postgres-init.sql               
   docs/
-    cli.md                              # step-by-step commands in PowerShell (Vault CLI)
+    dev_cli.md
+    server_cli.dm                 
   scripts/
     ps1/
       00-env.ps1
@@ -155,16 +156,17 @@ vault-demo-realistic-refactored/
       02-server-init-unseal.ps1
       03-credential-service-setup.ps1
       04-tests.ps1
-      05-db-setup.ps1                   # optional dynamic DB creds tests
+      05-db-setup.ps1
+    sh/
+    ...
+  secrets/
 ```
 
+---
+---
+# MY FIRST APPROACH to learn and test Vault
 
-
-
-
-
-
-# HashiCorp Vault – Basic Demonstration
+# Steps form HashiCorp Tutorials page
 
 This repository contains notes, examples, and configurations for a **basic demonstration of HashiCorp Vault**, covering CLI usage, authentication methods, policies, secrets engines, and the Vault UI.
 
@@ -285,15 +287,10 @@ The `userpass` method is available at `/auth/userpass`.
 
 ---
 
-## Move or Create the dicrectory where we want to save an ACL Policy
+## Save an ACL Policy
 
-In my case: #TODO 
-
-
-Move to a working directory:
-
+From the dicrectory where we want to save it:
 ```powershell
-cd $env:USERPROFILE\Documents
 notepad developer-vault-policy.hcl
 ```
 
@@ -372,28 +369,135 @@ Open your browser and navigate to:
 
 Accept the self-signed certificate warning.
 
-### Explore the UI
-
-1. Log in using the `root` token.
-2. Enable and configure auth methods.
-3. Create and manage ACL policies.
-4. Inspect secrets engines and stored secrets.
-
 ---
 
-## Vault HTTP API
+## Run the PowerShell scripts (`scripts/ps1/`) (Windows)
 
-The same operations can be performed using the Vault HTTP API.
-*(Work in progress – TODO)*
+These helpers automate the demo steps (dev/server mode, init/unseal, setup, tests).
 
----
+### If Windows blocks `.ps1` execution
 
-## Repository Structure
+If you see a PowerShell error about scripts being disabled or “not digitally signed”, you have two common options:
 
-```
-configs/   # Vault configuration files
-scripts/   # Helper scripts
-docs/      # Documentation and notes
+Temporary (current terminal only):
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
 ```
 
+Persistent for your user (recommended):
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+### If files are “blocked” after download
+
+If you cloned/downloaded the repo and Windows marked scripts as downloaded, you can unblock them:
+
+```powershell
+Get-ChildItem .\scripts -Recurse -Filter *.ps1 | Unblock-File
+```
+
+### Run from the repo root
+
+From the repository root folder, run:
+
+```powershell
+Set-Location .
+Get-ChildItem .\scripts\ps1
+```
+
+Then execute a script (example):
+
+```powershell
+.\scripts\ps1\00-env.ps1
+```
+
+### If PowerShell blocks again script execution
+
+If you see an error like “running scripts is disabled on this system”, allow local scripts for your user:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+### If you get `Code: 403` / `permission denied`
+
+That usually means you are currently authenticated with a **restricted token** (e.g., you previously ran `vault login -method=userpass ...`).
+
+Check the current token policies:
+
+```powershell
+vault token lookup
+```
+
+Then re-login as an operator/root token:
+
+- Dev mode: `vault login dev-only-token`
+- Server mode: `vault login <rootToken>` (from `server-init.json` if you saved it)
+
+Notes:
+
+- `scripts/ps1/03-credential-service-setup.ps1` requires `root` policy (it enables audit, writes policies, enables auth methods).
+- `scripts/ps1/04-tests.ps1` logs in as `payments-app` for T3; in dev mode it automatically switches back to `dev-only-token` for T4.
+
+### Suggested order (typical)
+
+- `scripts/ps1/00-env.ps1` (set env vars like `VAULT_ADDR`, etc.)
+- `scripts/ps1/01-dev-lab.ps1` (start dev-mode stack and basic checks)
+- `scripts/ps1/02-server-init-unseal.ps1` (init/unseal/login for server mode)
+- `scripts/ps1/03-credential-service-setup.ps1` (KV v2, policies, userpass, audit)
+- `scripts/ps1/04-tests.ps1` (run the validation steps)
+- `scripts/ps1/05-db-setup.ps1` (optional dynamic DB credentials demo)
+
 ---
+
+## Run the Bash scripts (`scripts/sh/`) (Linux/macOS/WSL)
+
+The `scripts/sh/` folder mirrors the same lab flow using Bash.
+
+### Option A — WSL (recommended)
+
+1) Install WSL and a distro (e.g., Ubuntu).
+
+2) In WSL, `cd` into the repo (example path):
+
+```bash
+cd /mnt/c/Users/matteo/Desktop/5_GITHUB/HASHICORP
+ls scripts/sh
+```
+
+3) Make scripts executable (first time only):
+
+```bash
+chmod +x scripts/sh/*.sh
+```
+
+4) Run a script:
+
+```bash
+./scripts/sh/01_start_vault.sh
+```
+
+Then (recommended order):
+
+```bash
+./scripts/sh/02_kv_secrets.sh
+./scripts/sh/03_policies.sh
+./scripts/sh/04_auth.sh
+```
+
+### Option B — Git Bash
+
+You can also run `.sh` scripts with Git Bash, but Docker networking and path handling can be trickier than WSL.
+
+### Notes
+
+- Some scripts may assume environment variables like `VAULT_ADDR` / `VAULT_TOKEN` are set.
+- If `vault` is not installed in your Linux/WSL environment, the scripts automatically fall back to running `vault` inside the Docker container (requires Docker from WSL / Docker Desktop WSL integration).
+- If a script fails, run with shell tracing to see the command that broke:
+
+```bash
+bash -x ./scripts/sh/03_policies.sh
+```

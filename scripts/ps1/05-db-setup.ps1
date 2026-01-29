@@ -6,6 +6,31 @@
 
 . "$PSScriptRoot\00-env.ps1"
 
+function Require-VaultRoot {
+  $lookupJson = vault token lookup -format=json 2>$null
+  if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($lookupJson)) {
+    Write-Host "Not logged in to Vault (or VAULT_TOKEN missing)."
+    Write-Host "Server+DB mode: run .\\scripts\\ps1\\02-server-init-unseal.ps1 (or login with your root token), then retry."
+    exit 1
+  }
+
+  try {
+    $lookup = $lookupJson | ConvertFrom-Json
+    $policies = @($lookup.data.policies)
+  } catch {
+    Write-Host "Unable to parse 'vault token lookup' output. Are you logged in?"
+    exit 1
+  }
+
+  if ($policies -notcontains "root") {
+    Write-Host "This script requires an operator/root token (policy: root)."
+    Write-Host ("Current token policies: {0}" -f ($policies -join ", "))
+    exit 1
+  }
+}
+
+Require-VaultRoot
+
 Write-Host "Enabling database secrets engine..."
 vault secrets enable database 2>$null
 

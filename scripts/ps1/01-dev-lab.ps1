@@ -16,4 +16,4 @@ Write-Host "Running credential service setup..."
 Write-Host "Running tests..."
 & "$PSScriptRoot\04-tests.ps1"
 
-Write-Host "Done. See docs\cli.md for manual steps and explanations."
+Write-Host "Done. See docs\dev_cli.md for the full manual flow (dev mode)."
